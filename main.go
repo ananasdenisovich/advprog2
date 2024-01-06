@@ -7,10 +7,20 @@ import (
 	"net/http"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+const (
+	mongoURI       = "mongodb://localhost:27017"
+	databaseName   = "furnitureShopDB"
+	collectionName = "users"
+)
+
+var client *mongo.Client
+var database *mongo.Database
 
 // Furniture struct to represent the JSON data for a furniture item
 type Furniture struct {
@@ -25,22 +35,50 @@ type User struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	Name      string             `bson:"name"`
 	Email     string             `bson:"email"`
+	Age       int                `bson:"age,omitempty"`
 	CreatedAt time.Time          `bson:"created_at"`
 	UpdatedAt time.Time          `bson:"updated_at"`
+	Version   int                `bson:"version"`
 }
 
 var inventory = []Furniture{
-	{1, "Comfortable Sofa", "A stylish and comfortable sofa for your living room.", 499.99},
-	{2, "Elegant Dining Table", "A beautiful dining table for your family gatherings.", 299.99},
-	{3, "Modern Coffee Table", "A sleek and modern coffee table for your lounge.", 129.99},
+	{ID: 1, Name: "Chair", Description: "Comfortable chair", Price: 49.99},
+	{ID: 2, Name: "Table", Description: "Sturdy table", Price: 99.99},
+	// Add more furniture items as needed
 }
 
-// MongoDB configuration
-const (
-	mongoURI       = "mongodb://localhost:27017"
-	databaseName   = "furnitureShopDB"
-	collectionName = "users"
-)
+func init() {
+	// Initialize MongoDB client
+	var err error
+	client, err = mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		fmt.Println("Error creating MongoDB client:", err)
+		return
+	}
+
+	// Connect to MongoDB
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		fmt.Println("Error connecting to MongoDB:", err)
+		return
+	}
+
+	// Check the success of the connection
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		fmt.Println("Error pinging MongoDB:", err)
+		return
+	}
+
+	// If the connection is successful, print a success message
+	fmt.Println("Connected to MongoDB successfully!")
+
+	// Access the furnitureShopDB database
+	database = client.Database(databaseName)
+}
 
 func handleGetFurniture(w http.ResponseWriter, r *http.Request) {
 	// Return the list of furniture items as JSON
@@ -77,46 +115,48 @@ func handleHTML(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html")
 }
 
-func main() {
+func createUsersCollection() error {
+	usersCollection := database.Collection(collectionName)
 
-	// Connect to MongoDB
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		fmt.Println("Error creating MongoDB client:", err)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-	if err != nil {
-		fmt.Println("Error connecting to MongoDB:", err)
-		return
-	}
-	defer client.Disconnect(ctx)
-
-	// Access the furnitureShopDB database
-	database := client.Database(databaseName)
-
-	// Create an example user
-	exampleUser := User{
+	_, err := usersCollection.InsertOne(context.TODO(), User{
 		Name:      "John Doe",
 		Email:     "john.doe@example.com",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-	}
+		Version:   1,
+	})
 
-	// Insert the user into the users collection
+	return err
+}
+
+func addAgeField() error {
 	usersCollection := database.Collection(collectionName)
-	insertResult, err := usersCollection.InsertOne(ctx, exampleUser)
-	if err != nil {
-		fmt.Println("Error inserting user:", err)
+
+	// Update all existing documents to set the Age field to a default value
+	_, err := usersCollection.UpdateMany(
+		context.TODO(),
+		bson.D{},
+		bson.M{"$set": bson.M{"age": 0}},
+	)
+
+	return err
+}
+
+func main() {
+	// Run migrations
+	if err := createUsersCollection(); err != nil {
+		fmt.Println("Error creating users collection:", err)
 		return
 	}
 
-	fmt.Println("Inserted user with ID:", insertResult.InsertedID)
+	if err := addAgeField(); err != nil {
+		fmt.Println("Error adding age field:", err)
+		return
+	}
 
+	// Your other application logic...
+
+	// Serve static files (HTML, CSS, JS) from the root path
 	http.Handle("/", http.FileServer(http.Dir(".")))
 
 	// Define the routes and handlers
@@ -125,7 +165,7 @@ func main() {
 
 	// Start the server on port 8080
 	fmt.Println("Server is running on :8080...")
-	err = http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Error starting the server:", err)
 	}
