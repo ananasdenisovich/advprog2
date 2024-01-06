@@ -2,13 +2,6 @@
 
 ## Group: SE-2216 🌟
 
-### Team Members
-
-| Name                 | Role      |
-| -------------------- | --------- |
-| Myrzabai Asima       | Developer |
-| Karima Bismeldinova  | Developer |
-
 # 🛋️ Online Furniture Shop
 
 ## 📖 Project Description
@@ -72,6 +65,3 @@ npm start
 
 We welcome contributions from the community! If you wish to contribute to the project, please fork the repository and submit a pull request. For major changes, open an issue first to discuss what you would like to change.
 
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
