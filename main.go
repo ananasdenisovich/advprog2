@@ -143,6 +143,37 @@ func addAgeField() error {
 }
 
 func main() {
+	// Connect to MongoDB
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		fmt.Println("Error creating MongoDB client:", err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		fmt.Println("Error connecting to MongoDB:", err)
+		return
+	}
+
+	// Check the success of the connection
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		fmt.Println("Error pinging MongoDB:", err)
+		return
+	}
+
+	// If the connection is successful, print a success message
+	fmt.Println("Connected to MongoDB successfully!")
+
+	defer client.Disconnect(ctx)
+
+	// Access the furnitureShopDB database
+	database := client.Database(databaseName)
+
 	// Run migrations
 	if err := createUsersCollection(); err != nil {
 		fmt.Println("Error creating users collection:", err)
@@ -153,8 +184,23 @@ func main() {
 		fmt.Println("Error adding age field:", err)
 		return
 	}
+	// Create an example user
+	exampleUser := User{
+		Name:      "John Doe",
+		Email:     "john.doe@example.com",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
 
-	// Your other application logic...
+	// Insert the user into the users collection
+	usersCollection := database.Collection(collectionName)
+	insertResult, err := usersCollection.InsertOne(ctx, exampleUser)
+	if err != nil {
+		fmt.Println("Error inserting user:", err)
+		return
+	}
+
+	fmt.Println("Inserted user with ID:", insertResult.InsertedID)
 
 	// Serve static files (HTML, CSS, JS) from the root path
 	http.Handle("/", http.FileServer(http.Dir(".")))
@@ -165,7 +211,7 @@ func main() {
 
 	// Start the server on port 8080
 	fmt.Println("Server is running on :8080...")
-	err := http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Error starting the server:", err)
 	}
