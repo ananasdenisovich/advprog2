@@ -22,7 +22,7 @@
 
 ## 🖼️ Screenshot of the Website
 
-![Screenshot of the first page of the Online Furniture Shop website](https://github.com/AsimaCoder/advprog2/assets/129846829/bb62d38a-988f-449c-b9e4-a332de30d875) ![image]()
+![Screenshot of the first page of the Online Furniture Shop website](https://github.com/AsimaCoder/advprog2/assets/129846829/bb62d38a-988f-449c-b9e4-a332de30d875) 
 
 ## 🚀 Getting Started
 
