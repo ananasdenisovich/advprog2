@@ -55,7 +55,7 @@ npm start
 
 ## 🛠️ Tools and Technologies Used
 
-- **Frontend**: [Link to frontend technology]
+- **Frontend**: CSS ([CSS Documentation])(https://www.w3schools.com/css/default.asp)
 - **Backend**: MongoDB ([Official MongoDB Documentation](https://docs.mongodb.com))
 - **Other Tools**: [List other tools and their sources or documentation]
 
