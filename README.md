@@ -41,17 +41,15 @@ cd advprog2
 
 3. Install the required dependencies: 
 npm install
-
 or 
 yarn install
 
 4. Start the server: 
 node server.js
-
 or 
 npm start
 
-5. Open your web browser and navigate to `http://localhost:3000` to access the application.
+5. Open your web browser and navigate to `http://localhost:8080` to access the application.
 
 </details>
 
