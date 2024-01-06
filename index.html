@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Online Furniture Shop</title>
 </head>
 
@@ -28,11 +29,19 @@
         <button type="button" onclick="submitOrder()">Submit Order</button>
     </form>
 
+    <div id="response"></div>
+
     <script>
         function getFurniture() {
             fetch('http://localhost:8080/getFurniture')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    // Handle the valid JSON response
                     const furnitureList = document.getElementById("furnitureList");
                     furnitureList.innerHTML = '<strong>Furniture List:</strong><br>';
                     data.forEach(item => {
@@ -40,7 +49,8 @@
                     });
                 })
                 .catch((error) => {
-                    console.error('Error:', error);
+                    // Handle invalid JSON or other errors
+                    displayResponse(`Error: ${error.message}`, 'error');
                 });
         }
 
@@ -60,13 +70,25 @@
                 },
                 body: JSON.stringify(jsonData),
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    console.log('Success:', data);
+                    // Handle the valid JSON response
+                    displayResponse(`Success: ${data.message}`, 'success');
                 })
                 .catch((error) => {
-                    console.error('Error:', error);
+                    // Handle invalid JSON or other errors
+                    displayResponse(`Error: ${error.message}`, 'error');
                 });
+        }
+
+        function displayResponse(message, type) {
+            const responseDiv = document.getElementById("response");
+            responseDiv.innerHTML = `<div class="${type}">${message}</div>`;
         }
     </script>
 </body>
