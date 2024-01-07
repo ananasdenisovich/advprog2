@@ -186,7 +186,6 @@ func main() {
 	http.HandleFunc("/getFurniture", handleGetFurniture)
 	http.HandleFunc("/submitOrder", handlePostOrder)
 
-	// routes and handlers for CRUD operations
 	http.HandleFunc("/createUser", createUser)
 	http.HandleFunc("/getUser", getUserByID)
 	http.HandleFunc("/updateUser", updateUser)
