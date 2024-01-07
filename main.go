@@ -186,9 +186,109 @@ func main() {
 	http.HandleFunc("/getFurniture", handleGetFurniture)
 	http.HandleFunc("/submitOrder", handlePostOrder)
 
+	// routes and handlers for CRUD operations
+	http.HandleFunc("/createUser", createUser)
+	http.HandleFunc("/getUser", getUserByID)
+	http.HandleFunc("/updateUser", updateUser)
+	http.HandleFunc("/deleteUser", deleteUser)
+	http.HandleFunc("/getAllUsers", getAllUsers)
+
 	fmt.Println("Server is running on :8080...")
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Error starting the server:", err)
 	}
+}
+
+// CRUD
+func createUser(w http.ResponseWriter, r *http.Request) {
+	var newUser User
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newUser.CreatedAt = time.Now()
+	newUser.UpdatedAt = newUser.CreatedAt
+
+	usersCollection := database.Collection(collectionName)
+	insertResult, err := usersCollection.InsertOne(context.Background(), newUser)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(insertResult)
+}
+func getUserByID(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("id")
+	objID, _ := primitive.ObjectIDFromHex(userID)
+
+	var user User
+	usersCollection := database.Collection(collectionName)
+	err := usersCollection.FindOne(context.Background(), bson.M{"_id": objID}).Decode(&user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	json.NewEncoder(w).Encode(user)
+}
+func updateUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("id")
+	objID, _ := primitive.ObjectIDFromHex(userID)
+
+	var updateData struct {
+		Name string `json:"name"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&updateData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	usersCollection := database.Collection(collectionName)
+	_, err = usersCollection.UpdateOne(
+		context.Background(),
+		bson.M{"_id": objID},
+		bson.M{"$set": bson.M{"name": updateData.Name, "updated_at": time.Now()}},
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+func deleteUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("id")
+	objID, _ := primitive.ObjectIDFromHex(userID)
+
+	usersCollection := database.Collection(collectionName)
+	_, err := usersCollection.DeleteOne(context.Background(), bson.M{"_id": objID})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+func getAllUsers(w http.ResponseWriter, r *http.Request) {
+	var users []User
+	usersCollection := database.Collection(collectionName)
+	cursor, err := usersCollection.Find(context.Background(), bson.M{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var user User
+		cursor.Decode(&user)
+		users = append(users, user)
+	}
+
+	json.NewEncoder(w).Encode(users)
 }
