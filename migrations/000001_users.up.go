@@ -14,6 +14,7 @@ func Up_XXXXXXXXXX_create_users(ctx context.Context, client *mongo.Client) error
 	usersCollection := database.Collection("users")
 
 	indexModel := mongo.IndexModel{
+
 		Keys: bson.D{{Key: "email", Value: 1}},
 	}
 

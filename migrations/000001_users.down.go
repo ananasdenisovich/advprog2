@@ -12,6 +12,7 @@ func Down_XXXXXXXXXX_create_users(ctx context.Context, client *mongo.Client) err
 
 	err := database.Collection("users").Drop(ctx)
 	if err != nil {
+
 		return fmt.Errorf("failed to drop users collection: %w", err)
 	}
 
