@@ -26,8 +26,7 @@
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Ensure you have MongoDB installed and running on your machine.
-- A modern web browser.
+- Ensure you have MongoDB, Go backend, Migrations installed and running on your machine.
 
 <details>
 <summary>🔧 Installation and Launch Instructions</summary>
@@ -35,30 +34,20 @@
 1. Clone the repository: 
 git clone https://github.com/ananasdenisovich/advprog2/
 
-2. Navigate to the project directory: 
-cd advprog2
+2. Open our project.
 
-3. Install the required dependencies: 
-npm install
-or 
-yarn install
+3. Open the terminal and run the server with "go run main.go" command
 
-4. Start the server: 
-node server.js
-or 
-npm start
+4. Open your web browser and navigate to `http://localhost:8080` to access the application.
 
-5. Open your web browser and navigate to `http://localhost:8080` to access the application.
-
+5. Use the "Get Furniture List" button to fetch and display furniture data. Fill out the order form and submit an order using the "Submit Order" button.Check the response displayed on the webpage. 
 </details>
 
 ## 🛠️ Tools and Technologies Used
 
-- **Frontend**: CSS ([CSS Documentation](https://www.w3schools.com/css/default.asp))
-- **Backend**: MongoDB ([Official MongoDB Documentation](https://docs.mongodb.com))
-- **Other Tools**: [List other tools and their sources or documentation]
-
-## 👐 Contributing
-
-We welcome contributions from the community! If you wish to contribute to the project, please fork the repository and submit a pull request. For major changes, open an issue first to discuss what you would like to change.
+- CSS: https://www.w3schools.com/css/default.asp
+- MongoDB: https://docs.mongodb.com
+- Go: https://go.dev/doc/
+- Migrations: https://docs.github.com/en/migrations
+</details>
 
