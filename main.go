@@ -22,7 +22,6 @@ const (
 var client *mongo.Client
 var database *mongo.Database
 
-// Furniture struct to represent the JSON data for a furniture item
 type Furniture struct {
 	ID          int     `json:"id" bson:"_id,omitempty"`
 	Name        string  `json:"name" bson:"name"`
@@ -30,7 +29,6 @@ type Furniture struct {
 	Price       float64 `json:"price" bson:"price"`
 }
 
-// User represents a user document in the MongoDB users collection
 type User struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	Name      string             `bson:"name"`
@@ -44,11 +42,10 @@ type User struct {
 var inventory = []Furniture{
 	{ID: 1, Name: "Chair", Description: "Comfortable chair", Price: 49.99},
 	{ID: 2, Name: "Table", Description: "Sturdy table", Price: 99.99},
-	// Add more furniture items as needed
 }
 
 func init() {
-	// Initialize MongoDB client
+
 	var err error
 	client, err = mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
@@ -56,7 +53,6 @@ func init() {
 		return
 	}
 
-	// Connect to MongoDB
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -66,33 +62,27 @@ func init() {
 		return
 	}
 
-	// Check the success of the connection
 	err = client.Ping(ctx, nil)
 	if err != nil {
 		fmt.Println("Error pinging MongoDB:", err)
 		return
 	}
 
-	// If the connection is successful, print a success message
 	fmt.Println("Connected to MongoDB successfully!")
 
-	// Access the furnitureShopDB database
 	database = client.Database(databaseName)
 }
 
 func handleGetFurniture(w http.ResponseWriter, r *http.Request) {
-	// Return the list of furniture items as JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(inventory)
 }
 
 func handlePostOrder(w http.ResponseWriter, r *http.Request) {
-	// Parse JSON data from the request body
 	var order map[string]interface{}
 	err := json.NewDecoder(r.Body).Decode(&order)
 	if err != nil {
-		// Return a JSON response in case of decoding error
 		response := map[string]string{"status": "400", "message": "Invalid JSON-message"}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -100,10 +90,8 @@ func handlePostOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Do something with the received order data
 	fmt.Printf("Received order data: %+v\n", order)
 
-	// Send a response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	response := map[string]string{"status": "200", "message": "Order received successfully"}
@@ -111,7 +99,6 @@ func handlePostOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHTML(w http.ResponseWriter, r *http.Request) {
-	// Serve the HTML file
 	http.ServeFile(w, r, "index.html")
 }
 
@@ -132,7 +119,6 @@ func createUsersCollection() error {
 func addAgeField() error {
 	usersCollection := database.Collection(collectionName)
 
-	// Update all existing documents to set the Age field to a default value
 	_, err := usersCollection.UpdateMany(
 		context.TODO(),
 		bson.D{},
@@ -143,7 +129,6 @@ func addAgeField() error {
 }
 
 func main() {
-	// Connect to MongoDB
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
@@ -159,22 +144,18 @@ func main() {
 		return
 	}
 
-	// Check the success of the connection
 	err = client.Ping(ctx, nil)
 	if err != nil {
 		fmt.Println("Error pinging MongoDB:", err)
 		return
 	}
 
-	// If the connection is successful, print a success message
 	fmt.Println("Connected to MongoDB successfully!")
 
 	defer client.Disconnect(ctx)
 
-	// Access the furnitureShopDB database
 	database := client.Database(databaseName)
 
-	// Run migrations
 	if err := createUsersCollection(); err != nil {
 		fmt.Println("Error creating users collection:", err)
 		return
@@ -184,7 +165,6 @@ func main() {
 		fmt.Println("Error adding age field:", err)
 		return
 	}
-	// Create an example user
 	exampleUser := User{
 		Name:      "John Doe",
 		Email:     "john.doe@example.com",
@@ -192,7 +172,6 @@ func main() {
 		UpdatedAt: time.Now(),
 	}
 
-	// Insert the user into the users collection
 	usersCollection := database.Collection(collectionName)
 	insertResult, err := usersCollection.InsertOne(ctx, exampleUser)
 	if err != nil {
@@ -202,14 +181,11 @@ func main() {
 
 	fmt.Println("Inserted user with ID:", insertResult.InsertedID)
 
-	// Serve static files (HTML, CSS, JS) from the root path
 	http.Handle("/", http.FileServer(http.Dir(".")))
 
-	// Define the routes and handlers
 	http.HandleFunc("/getFurniture", handleGetFurniture)
 	http.HandleFunc("/submitOrder", handlePostOrder)
 
-	// Start the server on port 8080
 	fmt.Println("Server is running on :8080...")
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {

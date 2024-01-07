@@ -19,7 +19,8 @@ body {
     text-align: center;
 }
 
-h1, h2 {
+h1,
+h2 {
     color: var(--color-primary);
     margin-bottom: 20px;
 }
@@ -37,8 +38,8 @@ button {
 }
 
 button:hover {
-    background-color: #E06C75; 
-    transform: translateY(-2px); 
+    background-color: #E06C75;
+    transform: translateY(-2px);
 }
 
 form {
