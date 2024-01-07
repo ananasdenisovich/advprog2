@@ -1,4 +1,3 @@
-# Go-Migration
 
 ## Group: SE-2216 🌟
 
