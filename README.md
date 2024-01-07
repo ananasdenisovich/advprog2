@@ -1,6 +1,3 @@
-
-## Group: SE-2216 🌟
-
 # 🛋️ Online Furniture Shop
 
 ## 📖 Project Description
@@ -13,6 +10,7 @@
 - 💻 Anyone interested in a modern, seamless furniture shopping journey.
 
 ## 👥 Team Members
+### Group: SE-2216 
 
 | Name                 | Role      |
 | -------------------- | --------- |
