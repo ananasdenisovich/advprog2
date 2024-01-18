@@ -1,23 +1,16 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
-<html lang="en">
-<head>
+
 <head>
     <meta charset="UTF-8">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style.css">
-    <title>Online Furniture Shop</title>
     <title>Online Furniture Shop</title>
 </head>
-</head>
-<body>
+
 <body>
     <h1>Online Furniture Shop</h1>
-    <h1>Online Furniture Shop</h1>
+
     <!-- Login Form -->
     <h2>Login</h2>
     <form id="loginForm">
@@ -25,52 +18,48 @@
         <input type="name" id="name" name="password" required><br>
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required><br>
+
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br>
+
         <button type="button" onclick="login()">Login</button>
     </form>
+
     <div id="loginResponse"></div>
-    <h2>Furniture Inventory</h2>
+
     <h2>Furniture Inventory</h2>
     <button onclick="getFurniture()">Get Furniture List</button>
-    <button onclick="getFurniture()">Get Furniture List</button>
     <div id="furnitureList"></div>
-    <div id="furnitureList"></div>
-    <h2>Place an Order</h2>
+
     <h2>Place an Order</h2>
     <form id="orderForm">
-    <form id="orderForm">
-        <label for="furnitureId">Furniture ID:</label>
         <label for="furnitureId">Furniture ID:</label>
         <input type="number" id="furnitureId" name="furnitureId" required><br>
-        <input type="number" id="furnitureId" name="furnitureId" required><br>
-        <label for="quantity">Quantity:</label>
+
         <label for="quantity">Quantity:</label>
         <input type="number" id="quantity" name="quantity" required><br>
-        <input type="number" id="quantity" name="quantity" required><br>
-        <label for="customerName">Your Name:</label>
+
         <label for="customerName">Your Name:</label>
         <input type="text" id="customerName" name="customerName" required><br>
-        <input type="text" id="customerName" name="customerName" required><br>
-        <label for="age">Your Age:</label>
+
         <label for="age">Your Age:</label>
         <input type="number" id="age" name="age" required><br>
-        <input type="number" id="age" name="age" required><br>
-        <button type="button" onclick="submitOrder()">Submit Order</button>
+
         <button type="button" onclick="submitOrder()">Submit Order</button>
     </form>
-    </form>
+
     <div id="response"></div>
-    <div id="response"></div>
-    <script>
+
     <script>
          function login() {
             const form = document.getElementById("loginForm");
             const formData = new FormData(form);
             const jsonData = {};
+
             formData.forEach((value, key) => {
                 jsonData[key] = value;
             });
+
             fetch('http://localhost:8080/login', {
                 method: 'POST',
                 headers: {
@@ -91,112 +80,67 @@
                 displayLoginResponse(`Login Error: ${error.message}`, 'error');
             });
         }
+
         function displayLoginResponse(message, type) {
             const responseDiv = document.getElementById("loginResponse");
             responseDiv.innerHTML = `<div class="${type}">${message}</div>`;
         }
-        function getFurniture() {
+
         function getFurniture() {
             fetch('http://localhost:8080/getFurniture')
-            fetch('http://localhost:8080/getFurniture')
-                .then(response => {
                 .then(response => {
                     if (!response.ok) {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
-                    }
-                    return response.json();
                     return response.json();
                 })
-                })
-                .then(data => {
                 .then(data => {
                     const furnitureList = document.getElementById("furnitureList");
-                    const furnitureList = document.getElementById("furnitureList");
-                    furnitureList.innerHTML = '<strong>Furniture List:</strong><br>';
                     furnitureList.innerHTML = '<strong>Furniture List:</strong><br>';
                     data.forEach(item => {
-                    data.forEach(item => {
-                        furnitureList.innerHTML += `<div>ID: ${item.id}, Name: ${item.name}, Price: $${item.price}</div>`;
                         furnitureList.innerHTML += `<div>ID: ${item.id}, Name: ${item.name}, Price: $${item.price}</div>`;
                     });
-                    });
-                })
                 })
                 .catch((error) => {
-                .catch((error) => {
-                    displayResponse(`Error: ${error.message}`, 'error');
                     displayResponse(`Error: ${error.message}`, 'error');
                 });
-                });
         }
-        }
-        function submitOrder() {
+
         function submitOrder() {
             const form = document.getElementById("orderForm");
-            const form = document.getElementById("orderForm");
-            const formData = new FormData(form);
             const formData = new FormData(form);
             const jsonData = {};
-            const jsonData = {};
-            formData.forEach((value, key) => {
+
             formData.forEach((value, key) => {
                 jsonData[key] = value;
-                jsonData[key] = value;
             });
-            });
-            fetch('http://localhost:8080/submitOrder', {
+
             fetch('http://localhost:8080/submitOrder', {
                 method: 'POST',
-                method: 'POST',
-                headers: {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Content-Type': 'application/json',
-                },
                 },
                 body: JSON.stringify(jsonData),
-                body: JSON.stringify(jsonData),
-            })
             })
                 .then(response => {
-                .then(response => {
-                    if (!response.ok) {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
                     }
                     return response.json();
-                    return response.json();
-                })
                 })
                 .then(data => {
-                .then(data => {
-                    displayResponse(`Success: ${data.message}`, 'success');
                     displayResponse(`Success: ${data.message}`, 'success');
                 })
-                })
-                .catch((error) => {
                 .catch((error) => {
                     displayResponse(`Error: ${error.message}`, 'error');
-                    displayResponse(`Error: ${error.message}`, 'error');
-                });
                 });
         }
-        }
-        function displayResponse(message, type) {
+
         function displayResponse(message, type) {
             const responseDiv = document.getElementById("response");
-            const responseDiv = document.getElementById("response");
-            responseDiv.innerHTML = `<div class="${type}">${message}</div>`;
             responseDiv.innerHTML = `<div class="${type}">${message}</div>`;
         }
-        }
-    </script>
     </script>
 </body>
-</body>
+
 </html>
