@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -33,7 +35,7 @@ type User struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	Name      string             `bson:"name"`
 	Email     string             `bson:"email"`
-	Age       int                `bson:"age,omitempty"`
+	Password  string             `bson:"password"`
 	CreatedAt time.Time          `bson:"created_at"`
 	UpdatedAt time.Time          `bson:"updated_at"`
 	Version   int                `bson:"version"`
@@ -71,6 +73,69 @@ func init() {
 	fmt.Println("Connected to MongoDB successfully!")
 
 	database = client.Database(databaseName)
+}
+
+func registerUser(c *gin.Context) {
+	var user User
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Hash the user's password before storing it
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
+		return
+	}
+	user.Password = string(hashedPassword)
+
+	// Set creation and update times
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
+	// Insert the user into the database
+	usersCollection := client.Database(databaseName).Collection(collectionName)
+	result, err := usersCollection.InsertOne(context.TODO(), user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully", "userID": result.InsertedID})
+}
+
+func loginUser(c *gin.Context) {
+	var loginRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Find the user by email
+	usersCollection := client.Database(databaseName).Collection(collectionName)
+	var user User
+	err := usersCollection.FindOne(context.TODO(), bson.M{"email": loginRequest.Email}).Decode(&user)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	// Compare the stored hashed password with the input password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	// TODO: Implement token generation and response
+
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }
 
 func handleGetFurniture(w http.ResponseWriter, r *http.Request) {
@@ -129,6 +194,11 @@ func addAgeField() error {
 }
 
 func main() {
+	r := gin.Default()
+
+	r.POST("/register", registerUser)
+	r.POST("/login", loginUser)
+
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
